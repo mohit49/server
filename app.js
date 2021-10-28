@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const mysql= require('mysql');
 const cors = require('cors');
-const https = require('https');
+//const https = require('https');
 const fs = require('fs');
 const options = {
     key: fs.readFileSync('key.pem'),
@@ -200,4 +200,4 @@ app.listen(process.env.PORT || PORT, () => {
 });
 
 // Create an HTTPS service identical to the HTTP service.
-https.createServer(options, app).listen(PORT);
+//https.createServer(options, app).listen(PORT);
