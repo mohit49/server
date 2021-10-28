@@ -195,9 +195,9 @@ app.post("/nearBylabs" ,(req, res) => {
     });
 
 })
-app.listen(30, () => {
-    console.log('server startted')
+app.listen(process.env.PORT || PORT, () => {
+    console.log(`server startted on ${PORT}`)
 });
 
 // Create an HTTPS service identical to the HTTP service.
-https.createServer(options, app).listen(3000);
+https.createServer(options, app).listen(PORT);
