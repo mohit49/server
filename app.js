@@ -23,7 +23,7 @@ app.get('/', function (req, res) {
 
 
 
-app.post("/register" ,(req, res) => {
+app.get("/register" ,(req, res) => {
 
     const userName = req.body.userName;
     const password = req.body.password;
