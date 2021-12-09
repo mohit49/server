@@ -31,9 +31,9 @@ app.get("/register" ,(req, res) => {
     const gender = req.body.gender;
     const email = req.body.email;
     const birthDate = req.body.birthDate;
-    db.query("SELECT  email  FROM Users WHERE email = '"+ email +"'", function(err1, checkMail, field){
+    db.query("SELECT  email  FROM user WHERE email = '"+ email +"'", function(err1, checkMail, field){
         if(checkMail.length == 0 ) {
-            db.query("SELECT  userName FROM Users WHERE  userName = '"+ userName +"'", function(err2, checkPhone, field){
+            db.query("SELECT  userName FROM user WHERE  userName = '"+ userName +"'", function(err2, checkPhone, field){
                
                 if(checkPhone.length == 0 ) {
                     res.status(200);
