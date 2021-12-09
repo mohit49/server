@@ -1,0 +1,75 @@
+
+> server@1.0.0 start /home/talkntype/server
+> node app.js
+
+Example app listening on port 3000.
+
+> server@1.0.0 start /home/talkntype/server
+> node app.js
+
+events.js:167
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE :::3000
+    at Server.setupListenHandle [as _listen2] (net.js:1328:14)
+    at listenInCluster (net.js:1376:12)
+    at Server.listen (net.js:1463:7)
+    at Function.listen (/home/talkntype/server/node_modules/express/lib/application.js:618:24)
+    at Object.<anonymous> (/home/talkntype/server/app.js:65:5)
+    at Module._compile (internal/modules/cjs/loader.js:702:30)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:713:10)
+    at Module.load (internal/modules/cjs/loader.js:612:32)
+    at tryModuleLoad (internal/modules/cjs/loader.js:551:12)
+    at Function.Module._load (internal/modules/cjs/loader.js:543:3)
+Emitted 'error' event at:
+    at emitErrorNT (net.js:1355:8)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+    at Function.Module.runMain (internal/modules/cjs/loader.js:746:11)
+    at startup (internal/bootstrap/node.js:240:19)
+    at bootstrapNodeJSCore (internal/bootstrap/node.js:564:3)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! server@1.0.0 start: `node app.js`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the server@1.0.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/talkntype/.npm/_logs/2021-12-05T03_54_12_374Z-debug.log
+
+> server@1.0.0 start /home/talkntype/server
+> node app.js
+
+events.js:167
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE :::3000
+    at Server.setupListenHandle [as _listen2] (net.js:1328:14)
+    at listenInCluster (net.js:1376:12)
+    at Server.listen (net.js:1463:7)
+    at Function.listen (/home/talkntype/server/node_modules/express/lib/application.js:618:24)
+    at Object.<anonymous> (/home/talkntype/server/app.js:65:5)
+    at Module._compile (internal/modules/cjs/loader.js:702:30)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:713:10)
+    at Module.load (internal/modules/cjs/loader.js:612:32)
+    at tryModuleLoad (internal/modules/cjs/loader.js:551:12)
+    at Function.Module._load (internal/modules/cjs/loader.js:543:3)
+Emitted 'error' event at:
+    at emitErrorNT (net.js:1355:8)
+    at process._tickCallback (internal/process/next_tick.js:63:19)
+    at Function.Module.runMain (internal/modules/cjs/loader.js:746:11)
+    at startup (internal/bootstrap/node.js:240:19)
+    at bootstrapNodeJSCore (internal/bootstrap/node.js:564:3)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! server@1.0.0 start: `node app.js`
+npm ERR! Exit status 1
+npm ERR! 
+npm ERR! Failed at the server@1.0.0 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/talkntype/.npm/_logs/2021-12-05T03_57_14_242Z-debug.log
