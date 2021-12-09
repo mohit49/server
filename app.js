@@ -10,7 +10,7 @@ const db = mysql.createConnection({
     host : 'localhost',
     user :'talkntyp_mohit',
     password:'mohit9313#',
-    database:'talkntyp_nodedb'
+    database:'talkntyp_serverapp'
 })
 
 
@@ -21,45 +21,49 @@ app.get('/', function (req, res) {
     res.send('<b>My</b> first express http server');
 });
 
-// On localhost:3000/welcome
-app.get('/welcome', function (req, res) {
-    res.send('<b>Hello</b> welcome to my http server made with express');
-});
 
 
-app.get("/nearBylabs" ,(req, res) => {
-   
-const city = req.body.city;
-    const state = req.body.state;
-    let  $query;
-    $query = "SELECT * FROM labs";
-    db.query( $query, function(err2, userResults , field) { 
-        if(userResults) {
-            const labs = []; 
-            userResults.forEach((location ,index) => {
-              
+app.post("/register" ,(req, res) => {
+
+    const userName = req.body.userName;
+    const password = req.body.password;
+    const fullName = req.body.fullName;
+    const gender = req.body.gender;
+    const email = req.body.email;
+    const birthDate = req.body.birthDate;
+    db.query("SELECT  email  FROM Users WHERE email = '"+ email +"'", function(err1, checkMail, field){
+        if(checkMail.length == 0 ) {
+            db.query("SELECT  userName FROM Users WHERE  userName = '"+ userName +"'", function(err2, checkPhone, field){
                
-                    labs.push(userResults[index]);
+                if(checkPhone.length == 0 ) {
+                    res.status(200);
+                    db.query("INSERT INTO Users (userName , Password, gender , fullName , email , birthDate) VALUES(?,?,?,?,?,?);", [userName, password, fullName, gender, email, birthDate] ,(err,result)=>{
+                    res.send(result);
+                    })
+                } else {
+                    res.json({
+                        message:'phoneExist',
+                        json: checkPhone,
+                       
 
-                
-            });
+                        
+                    }) 
+                }
+
+            })
+        }
+        else {
             res.json({
                 message:'emailExist',
-                json: labs
+                json: checkMail
             }) 
-            
         }
 
+    })
 
-    });
-
-
+   
 })
 
-// Change the 404 message modifing the middleware
-app.use(function(req, res, next) {
-    res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)" + path.dirname(require.main.filename || process.mainModule.filename));
-});
 
 // start the server in the port 3000 !
 app.listen( 3000,function () {
