@@ -2,12 +2,9 @@ const express = require('express');
 const app = express();
 const mysql= require('mysql');
 const cors = require('cors');
-//const https = require('https');
+const https = require('https');
 const fs = require('fs');
-const options = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem')
-  };
+
 app.use(cors());
 app.use(express.json());
 const db = mysql.createConnection({
@@ -195,9 +192,9 @@ app.post("/nearBylabs" ,(req, res) => {
     });
 
 })
-app.listen(process.env.PORT || 3000, function(){
-    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
-  });
+app.listen(30, () => {
+    console.log('server startted')
+});
 
 // Create an HTTPS service identical to the HTTP service.
-//https.createServer(options, app).listen(PORT);
+https.createServer(app).listen(3000);
