@@ -43,7 +43,7 @@ app.use("/register" ,(req, res) => {
                 } else {
                     res.json({
                         message:'userAlreadyExist',
-                        json: checkPhone,
+                        json: checkUserName,
                        
 
                         
