@@ -23,7 +23,7 @@ app.get('/', function (req, res) {
 
 
 
-app.get("/register" ,(req, res) => {
+app.use("/register" ,(req, res) => {
 
     const userName = req.body.userName;
     const password = req.body.password;
@@ -33,16 +33,16 @@ app.get("/register" ,(req, res) => {
     const birthDate = req.body.birthDate;
     db.query("SELECT  email  FROM user WHERE email = '"+ email +"'", function(err1, checkMail, field){
         if(checkMail.length == 0 ) {
-            db.query("SELECT  userName FROM user WHERE  userName = '"+ userName +"'", function(err2, checkPhone, field){
+            db.query("SELECT  userName FROM user WHERE  userName = '"+ userName +"'", function(err2, checkUserName, field){
                
-                if(checkPhone.length == 0 ) {
+                if(checkUserName.length == 0 ) {
                     res.status(200);
-                    db.query("INSERT INTO Users (userName , Password, gender , fullName , email , birthDate) VALUES(?,?,?,?,?,?);", [userName, password, fullName, gender, email, birthDate] ,(err,result)=>{
+                    db.query("INSERT INTO user (userName , Password, gender , fullName , email , birthDate) VALUES(?,?,?,?,?,?);", [userName, password, fullName, gender, email, birthDate] ,(err,result)=>{
                     res.send(result);
                     })
                 } else {
                     res.json({
-                        message:'phoneExist',
+                        message:'userAlreadyExist',
                         json: checkPhone,
                        
 
