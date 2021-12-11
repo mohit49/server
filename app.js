@@ -38,7 +38,13 @@ app.use("/register" ,(req, res) => {
                 if(checkUserName.length == 0 ) {
                     res.status(200);
                     db.query("INSERT INTO user (userName , Password, gender , fullName , email , birthDate) VALUES(?,?,?,?,?,?);", [userName, password, fullName, gender, email, birthDate] ,(err,result)=>{
-                    res.send(result);
+                        res.json({
+                            message:'User registered Sucessfully',
+                            json: [{'userName': userName, 'fullName': fullName,'gender':gender, 'email':email, 'birthday':birthDate}]
+                           
+    
+                            
+                        });
                     })
                 } else {
                     res.json({
