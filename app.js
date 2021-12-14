@@ -4,22 +4,29 @@ const mysql= require('mysql');
 const cors = require('cors');
 const https = require('https');
 const multer = require('multer');
+const bodyParser = require('body-parser');
 const path = require('path');
+app.use(cors());
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
+app.use(express.static('images'));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'images/profile-pic' )
-    },
-    filename:(req, file,cb)=>{
-        console.log(file);
-        cb(null, Date.now() + path.extname(file.originalname))
-    }
+    destination: "./image/profile-pic/",
+   
+    filename: function(req, file, cb){
+        
+      cb(null,"IMAGE-"  + Date.now() + path.extname(file.originalname));
+   }
+   
 })
 
 const upload = multer({
-    storage: storage
-});
-app.use(cors());
-app.use(express.json());
+    storage: storage,
+   
+    
+}).single('myImage' );
+
 const db = mysql.createConnection({
     host : 'localhost',
     user :'talkntyp_mohit',
@@ -35,9 +42,22 @@ app.get('/', function (req, res) {
     res.send('<b>My</b> first express http server');
 });
 
-app.use("/uploadPrifilePic", upload.single('image') ,(req, res) => {
-    console.log(req);
-    console.log(res)
+app.use("/upload" ,(req, res) => {
+
+    upload(req,res,(err)=>{
+const userSel  = req.body.userName;
+console.log(userSel);
+         if(!err) {
+    db.query("SELECT *  FROM user WHERE userName = '"+ userSel +"'", function(err1, userCheck, field){
+        console.log( userCheck, field);
+        db.query("UPDATE user SET profilePic = '"+ req.file.path + "' WHERE userName = '"+ userSel +"'")
+        
+    })
+    console.log(req.file);
+            return (res.status(200).send(req.file))
+        }
+
+    })
  });
 
 app.use("/register" ,(req, res) => {
@@ -47,17 +67,19 @@ app.use("/register" ,(req, res) => {
     const fullName = req.body.fullName;
     const gender = req.body.gender;
     const email = req.body.email;
+    const profilePic = 'image/profile-pic/dummyUser.jpeg'
     const birthDate = req.body.birthDate;
     db.query("SELECT  email  FROM user WHERE email = '"+ email +"'", function(err1, checkMail, field){
         if(checkMail.length === 0 ) {
             db.query("SELECT  userName FROM user WHERE  userName = '"+ username +"'", function(err2, checkUserName, field) {
-                if(checkUserName.length === 0 ) {
+                if(checkUserName.length === 0 ) { 
                     res.status(200);
-                    db.query("INSERT INTO user (userName , Password, gender , fullName , email , birthDate) VALUES(?,?,?,?,?,?);", [username, password, fullName, gender, email, birthDate] ,(err,result)=>{
+                    db.query("INSERT INTO user (userName , Password, gender , fullName , email , birthDate, profilePic) VALUES(?,?,?,?,?,?,?);", [username, password, fullName, gender, email, birthDate, profilePic] ,(err,result)=>{
                         console.log("result:"+ result)
                         res.json({
                             message:'User registered Sucessfully',
-                            json: [{'userName': username, 'password':password, 'fullName': fullName, 'gender': gender, 'email': email, 'birthDate': birthDate }]
+                            json: [{'userName': username, 'password':password, 'fullName': fullName, 'gender': gender, 'email': email, 'birthDate': birthDate }],
+                            userImg: profilePic
                         });
                     })
                 } else {
