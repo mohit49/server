@@ -3,7 +3,21 @@ const app = express();
 const mysql= require('mysql');
 const cors = require('cors');
 const https = require('https');
+const multer = require('multer');
 const path = require('path');
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'images/profile-pic' )
+    },
+    filename:(req, file,cb)=>{
+        console.log(file);
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+})
+
+const upload = multer({
+    storage: storage
+});
 app.use(cors());
 app.use(express.json());
 const db = mysql.createConnection({
@@ -21,7 +35,10 @@ app.get('/', function (req, res) {
     res.send('<b>My</b> first express http server');
 });
 
-
+app.use("/uploadPrifilePic", upload.single('image') ,(req, res) => {
+    console.log(req);
+    console.log(res)
+ });
 
 app.use("/register" ,(req, res) => {
 
