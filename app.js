@@ -6,6 +6,12 @@ const https = require('https');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const path = require('path');
+const http = require("http").Server(app);
+const io = require("socket.io")(http,{
+    cors:{
+        origin:'*',
+    }
+});
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
@@ -135,12 +141,12 @@ app.use("/authentication" ,(req, res) => {
     const password = req.body.password;
     db.query("SELECT  *  FROM user WHERE userName = '"+ username +"'", function(err1, userExist, field){
         if(userExist.length > 0){
-            console.log(userExist[0]);
+          
             if(userExist[0].password == password) {
                 res.json({
                 loginMark : 'login',
-                message:'User login Sucessfully',
-                json: [{'userName': userExist[0].username, 'password': userExist[0].password, 'fullName': userExist[0].fullName, 'gender': userExist[0].gender, 'email': userExist[0].email, 'birthDate': userExist[0].birthDate }],
+                message:'User login Sucessfully hhhh',
+                json: [{'userName': userExist[0].userName, 'password': userExist[0].password, 'fullName': userExist[0].fullName, 'gender': userExist[0].gender, 'email': userExist[0].email, 'birthDate': userExist[0].birthDate }],
                 userImg: userExist[0].profilePic
              });
             } 
@@ -163,7 +169,16 @@ app.use("/authentication" ,(req, res) => {
    
 })
 
-// start the server in the port 3000 !
-app.listen( 3001,function () {
-    console.log('Example app listening on port 3001.');
+io.on("connection", function(socket) {
+ 
+  socket.on("new-userConnections", function(data) {
+      console.log(data);
+    io.emit("new-remote-operations", data);
+  });
 });
+
+http.listen(3001, function() {
+  console.log("listening on *:4000");
+});
+// start the server in the port 3000 !
+
