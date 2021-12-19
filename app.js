@@ -12,6 +12,7 @@ const io = require("socket.io")(http,{
         origin:'*',
     }
 });
+
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
@@ -170,15 +171,104 @@ app.use("/authentication" ,(req, res) => {
 })
 
 io.on("connection", function(socket) {
- 
+
   socket.on("new-userConnections", function(data) {
-      console.log(data);
-    io.emit("new-remote-operations", data);
+      let username = data.userName;
+      let status = data.status;
+      
+     if (data.status === 'online') {
+         console.log('pageres-online')
+          db.query("SELECT  *  FROM onlineUsers WHERE userName = '"+ username +"'", function(err1, checkUser, field) {
+              console.log(!checkUser.length );
+              if(!checkUser.length) {
+           console.log('pageres-online')
+          db.query("INSERT INTO onlineUsers (userName, status) VALUES(?,?);", [username, status] ,(err,result)=>{
+               db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
+                      let userSet = [];
+                   result.forEach((ele,index)=>{
+                      
+                      let tableUserNane = ele.userName;
+                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                             
+                               io.emit("online-users", userSet);
+                           
+                         })
+                       
+                   })
+             
+                  
+                   
+               })
+              
+          })
+       
+                  
+              }
+              else if(checkUser.length) {
+                        db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
+                      let userSet = [];
+                   result.forEach((ele,index)=>{
+                      
+                      let tableUserNane = ele.userName;
+                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                             
+                               io.emit("online-users", userSet);
+                           
+                         })
+                       
+                   })
+             
+                  
+                   
+               })
+              }
+              
+             
+          });
+          
+     }
+     else {
+        
+         data.status = "offline";
+         db.query("DELETE FROM onlineUsers WHERE userName ='" + username + "'", (err2, result2) =>{
+            
+           db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
+               let userSet = [];
+               console.log('ye user resulr h:'+ result.length)
+               if(result.length > 0) {
+                                   
+                   result.forEach((ele,index)=>{
+                     
+                      let tableUserNane = ele.userName;
+                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                           
+                            io.emit("online-users", userSet);
+                           
+                             
+                         })
+                       
+                   })
+               } else {
+                   console.log('no users')
+                    io.emit("online-users", userSet);
+               }
+                   
+                   
+                   
+               })
+               
+         })
+       
+     }
+   
   });
+
 });
 
 http.listen(3001, function() {
   console.log("listening on *:4000");
 });
 // start the server in the port 3000 !
-
