@@ -189,7 +189,7 @@ io.on("connection", function(socket) {
                       
                       let tableUserNane = ele.userName;
                          db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic,  'birthDate': userDet[0].birthDate  });
                              
                                io.emit("online-users", userSet);
                            
@@ -212,7 +212,7 @@ io.on("connection", function(socket) {
                       
                       let tableUserNane = ele.userName;
                          db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic, 'birthDate': userDet[0].birthDate });
                              
                                io.emit("online-users", userSet);
                            
@@ -243,7 +243,7 @@ io.on("connection", function(socket) {
                      
                       let tableUserNane = ele.userName;
                          db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic });
+                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic,  'birthDate': userDet[0].birthDate });
                            
                             io.emit("online-users", userSet);
                            
@@ -272,3 +272,4 @@ http.listen(3001, function() {
   console.log("listening on *:4000");
 });
 // start the server in the port 3000 !
+
