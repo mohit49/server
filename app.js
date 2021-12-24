@@ -12,6 +12,23 @@ const io = require("socket.io")(http,{
         origin:'*',
     }
 });
+let users = [];
+
+const addUser = (userId, socketId) => {
+    console.log(userId);
+  !users.some((user) => user.userId === userId) &&
+    users.push({ userId, socketId });
+};
+
+const removeUser = (socketId) => {
+ users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+    console.log('data:'+ userId);
+  return users.find((user) => user.userId === userId);
+};
+
 
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
@@ -168,105 +185,45 @@ app.use("/authentication" ,(req, res) => {
     });
 
    
-})
-
-io.on("connection", function(socket) {
-
-  socket.on("new-userConnections", function(data) {
-      let username = data.userName;
-      let status = data.status;
-      
-     if (data.status === 'online') {
-         console.log('pageres-online')
-          db.query("SELECT  *  FROM onlineUsers WHERE userName = '"+ username +"'", function(err1, checkUser, field) {
-              console.log(!checkUser.length );
-              if(!checkUser.length) {
-           console.log('pageres-online')
-          db.query("INSERT INTO onlineUsers (userName, status) VALUES(?,?);", [username, status] ,(err,result)=>{
-               db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
-                      let userSet = [];
-                   result.forEach((ele,index)=>{
-                      
-                      let tableUserNane = ele.userName;
-                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic,  'birthDate': userDet[0].birthDate  });
-                             
-                               io.emit("online-users", userSet);
-                           
-                         })
-                       
-                   })
-             
-                  
-                   
-               })
-              
-          })
-       
-                  
-              }
-              else if(checkUser.length) {
-                        db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
-                      let userSet = [];
-                   result.forEach((ele,index)=>{
-                      
-                      let tableUserNane = ele.userName;
-                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic, 'birthDate': userDet[0].birthDate });
-                             
-                               io.emit("online-users", userSet);
-                           
-                         })
-                       
-                   })
-             
-                  
-                   
-               })
-              }
-              
-             
-          });
-          
-     }
-     else {
-        
-         data.status = "offline";
-         db.query("DELETE FROM onlineUsers WHERE userName ='" + username + "'", (err2, result2) =>{
-            
-           db.query("SELECT * FROM onlineUsers" ,(err3,result)=>{ 
-               let userSet = [];
-               console.log('ye user resulr h:'+ result.length)
-               if(result.length > 0) {
-                                   
-                   result.forEach((ele,index)=>{
-                     
-                      let tableUserNane = ele.userName;
-                         db.query("SELECT  *  FROM user WHERE userName = '"+ tableUserNane +"'", function(erruser, userDet){
-                             userSet.push({'status': status,'fullName': userDet[0].fullName, 'userName': userDet[0].userName, 'userImg': userDet[0].profilePic,  'birthDate': userDet[0].birthDate });
-                           
-                            io.emit("online-users", userSet);
-                           
-                             
-                         })
-                       
-                   })
-               } else {
-                   console.log('no users')
-                    io.emit("online-users", userSet);
-               }
-                   
-                   
-                   
-               })
-               
-         })
-       
-     }
-   
-  });
-
 });
+
+
+
+var onlineUsers = [];
+io.on('connection', (socket) => {
+    
+    // when user login it will create toke with user name;
+    socket.on('user-online', (data) => {
+        var soketID = socket.id,
+        username = data.userName;
+        onlineUsers = onlineUsers.filter(ele => ele.username !== username);
+        onlineUsers.push({'soketID':socket.id, 'username':data.userName });
+         socket.broadcast.emit("online-users", onlineUsers);
+         console.log(onlineUsers)
+    });
+    socket.on('user-offline', (data) => {
+        console.log('offline')
+        var soketID = socket.id,
+        username = data.userName;
+        onlineUsers = onlineUsers.filter(ele => ele.username !== username);
+        
+         socket.broadcast.emit("online-users", onlineUsers);
+         console.log(onlineUsers)
+    });
+    
+  
+    
+    
+
+  socket.on('disconnect', () => {
+      if(onlineUsers) {
+        var soketID = socket.id,
+            onlineUsers = onlineUsers.filter(ele => ele.soketID !== soketID);
+             socket.broadcast.emit("online-users", onlineUsers)
+        }
+  });
+});
+
 
 http.listen(3001, function() {
   console.log("listening on *:4000");
