@@ -12,31 +12,15 @@ const io = require("socket.io")(http,{
         origin:'*',
     }
 });
-let users = [];
-
-const addUser = (userId, socketId) => {
-    console.log(userId);
-  !users.some((user) => user.userId === userId) &&
-    users.push({ userId, socketId });
-};
-
-const removeUser = (socketId) => {
- users = users.filter((user) => user.socketId !== socketId);
-};
-
-const getUser = (userId) => {
-    console.log('data:'+ userId);
-  return users.find((user) => user.userId === userId);
-};
 
 
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
-app.use(express.static('images'));
+app.use('/images', express.static('images'));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 const storage = multer.diskStorage({
-    destination: "../public_html/image/profile-pic/",
+    destination: "images/profile-pic/",
    
     filename: function(req, file, cb){
         
@@ -53,11 +37,49 @@ const upload = multer({
 
 const db = mysql.createConnection({
     host : 'localhost',
-    user :'talkntyp_mohit',
-    password:'mohit9313#',
+    user :'mohit9313',
+    password:'mohit9313',
     database:'talkntyp_serverapp'
-})
+});
+let onlineUsers = [];
+const addUserName = (data, socketId) =>{
+    username = data[0].userName;
+    fullName = data[0].fullName;
+    profilePic =  data[0].pic;
+    !onlineUsers.some((user)=> user.username === username) && onlineUsers.push({username, fullName ,profilePic, socketId})
+};
+const removeUser = (socketId) =>{
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+};
+const getUser = (username) =>{
+    return onlineUsers.find((user) => user.username === username)
+}
 
+// getting chatting users
+getChatUsers = (username) =>{
+    return new Promise((resolve, reject)=>{
+        db.query("SELECT  *  FROM msglist WHERE userName = '"+ username +"'",  (error, results)=>{
+            if(error){
+                return reject(error);
+            }
+            return resolve(results);
+        });
+    });
+};
+// end getting chatting users
+
+// getSingleUserFullInformation
+getSingleUserFullInformation = (username) =>{
+    return new Promise((resolve, reject)=>{
+        db.query("SELECT  *  FROM user WHERE userName = '"+ username +"'",  (error, results)=>{
+            if(error){
+                return reject(error);
+            }
+            return resolve(results);
+        });
+    });
+};
+// end getSingleUserFullInformation
 
 
 
@@ -186,44 +208,69 @@ app.use("/authentication" ,(req, res) => {
 
    
 });
+io.on('connection',(socket)=>{
 
-
-
-var onlineUsers = [];
-io.on('connection', (socket) => {
-    
-    // when user login it will create toke with user name;
-    socket.on('user-online', (data) => {
-        var soketID = socket.id,
-        username = data.userName;
-        onlineUsers = onlineUsers.filter(ele => ele.username !== username);
-        onlineUsers.push({'soketID':socket.id, 'username':data.userName });
-         socket.broadcast.emit("online-users", onlineUsers);
-         console.log(onlineUsers)
-    });
-    socket.on('user-offline', (data) => {
-        console.log('offline')
-        var soketID = socket.id,
-        username = data.userName;
-        onlineUsers = onlineUsers.filter(ele => ele.username !== username);
+    socket.on('userJoin', (data)=>{
+        addUserName(data , socket.id);
         
-         socket.broadcast.emit("online-users", onlineUsers);
-         console.log(onlineUsers)
+        io.emit('online-users', onlineUsers)
     });
-    
-  
-    
-    
-
-  socket.on('disconnect', () => {
-      if(onlineUsers) {
-        var soketID = socket.id,
-            onlineUsers = onlineUsers.filter(ele => ele.soketID !== soketID);
-             socket.broadcast.emit("online-users", onlineUsers)
+   
+    socket.on('getChatList', async (data)=>{
+        const chatListForUser = data[0].userName;
+        var reciver = getUser(chatListForUser);
+        if(reciver) {
+        socket.join(reciver.socketId);
         }
-  });
-});
+        try{ 
+            
+            let msgWithList = await getChatUsers(chatListForUser);
+            msgWithList = msgWithList[0].msgWithList;
+            console.log(msgWithList);
+            msgWithList.split(',').forEach(async(ele) => {
+                try {
+                    let singleUserInfo = await getSingleUserFullInformation(ele);
+                    //singleUserInfo = Object.filter(singleUserInfo[0], ele => ele[key] === 'password');
+                
+                
+                    singleUserInfo = Object.entries(singleUserInfo[0]).filter(([key , ele]) => key !== 'password');
+                    console.log(Object.fromEntries(singleUserInfo));
+                    
+                    if(reciver) {
+                    io.to(reciver.socketId).emit('reciveChatList',  Object.fromEntries(singleUserInfo));
+                    }
+                  }
+                
+                catch(error){
+                    console.log(error)
+                    }
+            });
+        } catch(error) {
+                console.log(error)
+            }
+        //io.emit('online-users', onlineUsers)
+    });
 
+    socket.on('sendMsg', async (data)=> {
+        try { 
+            const reciver = getUser(data.reciversName);
+            const user =  await getSingleUserFullInformation(data.userName);
+            const txtMsg = data.textMsg;
+        if(reciver) {
+            socket.join(reciver.socketId);
+            io.to(reciver.socketId).emit('msg-recived', {user, txtMsg})
+            }
+        } catch(error) {
+            console.log(error)
+        }
+    })
+    
+
+    socket.on('disconnect', ()=>{
+        removeUser(socket.id);
+        io.emit('online-users', onlineUsers);
+    })
+})
 
 http.listen(3001, function() {
   console.log("listening on *:4000");
